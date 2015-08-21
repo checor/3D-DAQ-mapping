@@ -9,7 +9,7 @@ Created on Fri Aug 21 09:30:49 2015
 from traits.api import HasTraits, Float, Range, Bool, Enum, Instance, \
                        Property, List
 from traitsui.api import View, Group, Item, HSplit, VSplit, InstanceEditor, \
-                         TableEditor
+                         TableEditor, Handler
 from traitsui.menu import MenuBar, Menu, Action
 from tvtk.pyface.scene_editor import SceneEditor
 from mayavi.core.ui.engine_view import EngineView
@@ -151,6 +151,14 @@ class ProbePicker(HasTraits):
 
     def _get_current_selection(self):
         return self.scene.engine.current_selection
+
+class ProbeHandler ( Handler ):
+    """ Define the handler class for the HRDemo view. This class defines all
+        of the handler methods for the menu and tool bar actions."""
+    
+    def quit ( self, info ):
+        """ Quit the application. """
+        info.ui.dispose()
 
 
 #For test purposes only
