@@ -10,7 +10,8 @@ from traits.api import HasTraits, Float, Range, Bool, Enum, Instance, \
                        Property, List
 from traitsui.api import View, Group, Item, HSplit, VSplit, InstanceEditor, \
                          TableEditor, Handler
-from traitsui.menu import MenuBar, Menu, Action
+from traitsui.menu import MenuBar, Menu, Action, ToolBar
+from traitsui.table_column import ObjectColumn
 from tvtk.pyface.scene_editor import SceneEditor
 from mayavi.core.ui.engine_view import EngineView
 from mayavi.tools.mlab_scene_model import MlabSceneModel
@@ -24,7 +25,7 @@ class Probe(HasTraits):
     y = Float()
     z = Float()
     
-    Type = Enum('Temperature')    
+    Type = Enum('Temperature', 'Gauge', 'Other')    
     
     Array = Bool(False)
     
@@ -60,7 +61,33 @@ class Probe(HasTraits):
                 title = "Add / Edit probe",
                 buttons = [ "OK" ])
 
-class ProbePicker(HasTraits):
+class ProbeHandler ( Handler ):
+    """ Define the handler class for the Probe. This class defines all
+        of the handler methods for the menu and tool bar actions."""
+    
+    def quit_ ( self, info ):
+        """ Quit the application. """
+        info.ui.dispose()
+
+    def add_probe ( self, info ):
+        """ Add a new probe. """
+        new = Probe()
+        ui  = new.edit_traits( kind = 'livemodal' )
+        if ui.result:
+            info.object.probes.append( new )
+        
+    def delete_probe ( self, info ):
+        """ Delete an existing probee. """
+        oprobs = info.object
+        oprobs.probes.remove( oprobs.selected )
+        oprobs.selected = None
+        
+    def show_about ( self, info ):
+        """ Display the 'About' view. """
+        self.edit_traits( view = 'about' )
+
+
+class ProbeWindow(HasTraits):
     """The main menu por placing and viewing physical ubications of the probes
     """
     # The scene model.
@@ -74,15 +101,9 @@ class ProbePicker(HasTraits):
     
     #Probe add
     probes = List(Probe)
+    print List(Probe)
+    print 'ke'
     probe_selected = Instance(Probe)
-    
-    #Probe adding techniques
-    def add_probe ( self, info ):
-        """ Add a new probe """
-        new = Probe()
-        ui  = new.edit_traits( kind = 'livemodal' )
-        if ui.result:
-            info.object.employees.append( new )
     
     #Actions for menus
     def quit_(self):
@@ -94,7 +115,35 @@ class ProbePicker(HasTraits):
                                 action = 'quit_' ),
                     name="File")
                     )
+    #Toolbar parts
+    add_action = Action( 
+        name   = 'Add Probe...', 
+        action = 'add_probe',
+        #image  = ImageResource( 'add_employee', search_path = [ search_path ] )
+    )
+                     
+# 'Delete an existing employee' action:
+    delete_action = Action(
+        name   = 'Delete Probe',
+        action = 'delete_probe',
+        enabled_when = 'object.selected is not None',
+        #image  = ImageResource( 'delete_employee', search_path = [ search_path ] )
+    )
+
     
+    teditor = TableEditor(
+        columns = [ ObjectColumn( name = 'x'),
+                    ObjectColumn( name = 'y'),
+                    ObjectColumn( name = 'z'),
+                    ObjectColumn( name = 'Array')],
+#    selected     = 'selected',
+#    sortable     = True,
+#    deletable    = False,
+#    editable     = True,
+#    configurable = False
+    )  
+    #Toolbar
+    toolb = ToolBar(add_action, delete_action)                    
     ######################
     view = View(HSplit(VSplit(Item(name='engine_view',
                                    style='custom',
@@ -105,23 +154,29 @@ class ProbePicker(HasTraits):
                                    enabled_when='current_selection is not None',
                                    style='custom',
                                    springy=True,
-                                   show_label=False),
+                                   show_label=False
+                                   ),
                               #Item Probe Space
                               Group(Item( 'probes',
-                                   show_label = False,
-                                   editor = TableEditor() ) ),
+                                   show_label = True,
+                                   editor = teditor
+                                        ),
+                                        
+                                   ),
                               ),
-                               Item(name='scene',
-                                    editor=SceneEditor(),
-                                    show_label=False,
-                                    resizable=True,
-                                    height=500,
-                                    width=500),
+                       Item(name='scene',
+                            editor=SceneEditor(),
+                            show_label=False,
+                            resizable=True,
+                            height=500,
+                            width=500),
                       ),
                 resizable=True,
                 scrollable=True,
                 title = 'Probe picker',
-                menubar = menu1
+                handler=ProbeHandler(),
+                menubar = menu1,
+                toolbar = toolb
                 )
 
     def __init__(self, **traits):
@@ -152,16 +207,8 @@ class ProbePicker(HasTraits):
     def _get_current_selection(self):
         return self.scene.engine.current_selection
 
-class ProbeHandler ( Handler ):
-    """ Define the handler class for the HRDemo view. This class defines all
-        of the handler methods for the menu and tool bar actions."""
-    
-    def quit ( self, info ):
-        """ Quit the application. """
-        info.ui.dispose()
-
 
 #For test purposes only
-prebees = [Probe()]
-test = ProbePicker()
+probs = [Probe(x=10, y=12,z=23)]
+test = ProbeWindow(probes=probs)
 test.configure_traits()
