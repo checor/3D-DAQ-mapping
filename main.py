@@ -7,7 +7,7 @@ Created on Fri Aug 21 09:30:49 2015
 
 #Entought imports
 from traits.api import HasTraits, Float, Range, Bool, Enum, Instance, \
-                       Property, List
+                       Property, List, on_trait_change
 from traitsui.api import View, Group, Item, HSplit, VSplit, InstanceEditor, \
                          TableEditor, Handler
 from traitsui.menu import MenuBar, Menu, Action, ToolBar
@@ -15,6 +15,7 @@ from traitsui.table_column import ObjectColumn
 from tvtk.pyface.scene_editor import SceneEditor
 from mayavi.core.ui.engine_view import EngineView
 from mayavi.tools.mlab_scene_model import MlabSceneModel
+from mayavi.mlab import points3d
 
 class Probe(HasTraits):
     """A class for a probe, the physical ubication of a sensor. Can be a single
@@ -34,10 +35,14 @@ class Probe(HasTraits):
     y_angle = Float()
     z_angle = Float()
     
-    x_qty = Range(0)
-    y_qty = Range(0)
-    z_qty = Range(0)
+    x_qty = Range(1)
+    y_qty = Range(1)
+    z_qty = Range(1)
 
+    x_dist = Float()
+    y_dist = Float()
+    z_dist = Float()
+    
     #View for editing the probe TODO
     gen_view = Group(Item(name = 'x'),
                      Item(name = 'y'),
@@ -49,9 +54,12 @@ class Probe(HasTraits):
     arr_view = Group(Item(name = 'x_angle'),
                      Item(name = 'y_angle'),
                      Item(name = 'z_angle'),
+                     Item(name = 'x_qty'),
                      Item(name = 'y_qty'),
                      Item(name = 'z_qty'),
-                     Item(name = 'y_qty'),
+                     Item(name = 'x_dist'),
+                     Item(name = 'y_dist'),
+                     Item(name = 'z_dist'),
                      label = "Array info",
                      show_border  = True,
                      enabled_when = 'Array == True')
@@ -78,9 +86,9 @@ class ProbeHandler ( Handler ):
         
     def delete_probe ( self, info ):
         """ Delete an existing probee. """
-        oprobs = info.object
-        oprobs.probes.remove( oprobs.selected )
-        oprobs.selected = None
+        info.object.probe_selected
+        info.object.probes.remove( info.object.probe_selected )
+        info.object.probe_selected = None
         
     def show_about ( self, info ):
         """ Display the 'About' view. """
@@ -101,9 +109,8 @@ class ProbeWindow(HasTraits):
     
     #Probe add
     probes = List(Probe)
-    print List(Probe)
-    print 'ke'
     probe_selected = Instance(Probe)
+    prob_done = False
     
     #Actions for menus
     def quit_(self):
@@ -136,11 +143,11 @@ class ProbeWindow(HasTraits):
                     ObjectColumn( name = 'y'),
                     ObjectColumn( name = 'z'),
                     ObjectColumn( name = 'Array')],
-#    selected     = 'selected',
-#    sortable     = True,
-#    deletable    = False,
-#    editable     = True,
-#    configurable = False
+    selected     = 'probe_selected',
+    sortable     = True,
+    deletable    = False,
+    editable     = False,
+    configurable = False
     )  
     #Toolbar
     toolb = ToolBar(add_action, delete_action)                    
@@ -182,25 +189,21 @@ class ProbeWindow(HasTraits):
     def __init__(self, **traits):
         HasTraits.__init__(self, **traits)
         self.engine_view = EngineView(engine=self.scene.engine)
-
         # Hook up the current_selection to change when the one in the engine
         # changes.  This is probably unnecessary in Traits3 since you can show
         # the UI of a sub-object in T3.
         self.scene.engine.on_trait_change(self._selection_change,
                                           'current_selection')
-
-        self.generate_data_mayavi()
-
-    def generate_data_mayavi(self):
-        """Shows how you can generate data using mayavi instead of mlab."""
-        from mayavi.sources.api import ParametricSurface
-        from mayavi.modules.api import Outline, Surface
-        e = self.scene.engine
-        s = ParametricSurface()
-        e.add_source(s)
-        e.add_module(Outline())
-        e.add_module(Surface())
-
+        self.prob_done = True        
+        self.generate_probes()
+        
+    @on_trait_change("probes")    
+    def generate_probes(self):
+        print "Changed"
+        if self.prob_done:
+            for i in self.probes:
+                points3d(i.x, i.y, i.z)
+            
     def _selection_change(self, old, new):
         self.trait_property_changed('current_selection', old, new)
 
@@ -209,6 +212,10 @@ class ProbeWindow(HasTraits):
 
 
 #For test purposes only
-probs = [Probe(x=10, y=12,z=23)]
-test = ProbeWindow(probes=probs)
-test.configure_traits()
+if __name__ == "__main__":
+    probs = [Probe(x=0, y=0, z=0), Probe(x=0, y=2, z=0),
+             Probe(x=2, y=0, z=0), Probe(x=2, y=2,z=0),
+             Probe(x=4, y=0, z=0), Probe(x=4, y=2,z=0),
+             Probe(x=6, y=0, z=0), Probe(x=6, y=2,z=0)]
+    test = ProbeWindow(probes=probs)#probes=probs)
+    test.configure_traits()
