@@ -1,0 +1,12 @@
+<?xml version='1.0' standalone='yes' ?>
+<LVData xmlns="http://www.ni.com/LVData">
+<Version>13.0</Version>
+<Object>
+<Name>DAQ.lvclass in</Name>
+<NumLevels>1</NumLevels>
+<Class>DAQ.lvclass</Class>
+<Version>1.0.0.2</Version>
+<Cluster>
+</Cluster>
+</Object>
+</LVData>

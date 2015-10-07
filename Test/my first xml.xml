@@ -1,0 +1,54 @@
+<?xml version='1.0' standalone='yes' ?>
+<LVData xmlns="http://www.ni.com/LVData">
+<Version>13.0</Version>
+<Object>
+<Name>DAQ.lvclass in</Name>
+<NumLevels>1</NumLevels>
+<Class>DAQ.lvclass</Class>
+<Version>1.0.0.2</Version>
+<Cluster>
+<Name>DAQ.lvclass</Name>
+<NumElts>10</NumElts>
+<String>
+<Name>Marca</Name>
+<Val>asdfasfda</Val>
+</String>
+<String>
+<Name>Modelo</Name>
+<Val>Pene</Val>
+</String>
+<DBL>
+<Name># of analog inputs</Name>
+<Val>5.00000000000000</Val>
+</DBL>
+<DBL>
+<Name># of analog outputs</Name>
+<Val>5.00000000000000</Val>
+</DBL>
+<DBL>
+<Name># of digital I/O</Name>
+<Val>4.00000000000000</Val>
+</DBL>
+<DBL>
+<Name>Digital level</Name>
+<Val>5.00000000000000</Val>
+</DBL>
+<DBL>
+<Name>Analog min</Name>
+<Val>10.00000000000000</Val>
+</DBL>
+<DBL>
+<Name>Analog max</Name>
+<Val>13.00000000000000</Val>
+</DBL>
+<String>
+<Name>Protocols</Name>
+<Val>""ññlkaf</Val>
+</String>
+<String>
+<Name>Measures</Name>
+<Val>asdfkjañlkfj</Val>
+</String>
+</Cluster>
+</Object>
+</LVData>
